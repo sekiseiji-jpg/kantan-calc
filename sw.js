@@ -1,5 +1,5 @@
 // かんたん電卓 Service Worker（オフライン対応）
-const CACHE = "kantan-calc-v27";
+const CACHE = "kantan-calc-v28";
 const ASSETS = [
   "./",
   "./index.html",
@@ -16,7 +16,11 @@ const ASSETS = [
 // インストール時に必要ファイルをキャッシュ
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    // cache: "reload" … ブラウザのHTTPキャッシュ（GitHub Pages は10分）を通さず最新を取得する。
+    // これが無いと、番号を上げた新しいキャッシュに古い app.js などが入ってしまう。
+    caches.open(CACHE)
+      .then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: "reload" }))))
+      .then(() => self.skipWaiting())
   );
 });
 
