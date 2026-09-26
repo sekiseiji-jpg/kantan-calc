@@ -237,7 +237,11 @@
 
     if (binaryOps.includes(value)) {
       if (input === "") {
-        if (value === "-") input += value;
+        // 空の状態で押せるのは負数の − だけ（押した直後に表示する）
+        if (value === "-") {
+          input = value;
+          render();
+        }
         return;
       }
       if (binaryOps.includes(last)) {
