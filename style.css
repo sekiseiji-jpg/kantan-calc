@@ -1,0 +1,522 @@
+/* ===== 既定の配色 ===== */
+:root {
+  --bg: #eef1f4;          /* 背景（ページ） … 「背景」設定で変更 */
+  --calc-bg: #ffffff;     /* 本体（箱）     … 「本体」設定で変更 */
+  --display-bg: #eef2f5;
+  --key-bg: #f3f6f9;
+  --key-bg-active: #e2e8ee;
+  --key-text: #1f2933;
+  --fn-bg: #dbe4ec;
+  --fn-bg-active: #c9d4de;
+  --op-bg: #2f9fed;
+  --op-bg-active: #1d83d6;
+  --equal-bg: #f6a609;
+  --equal-bg-active: #e0950a;
+  --result-text: #102027;
+  --expr-text: #5b6b78;
+}
+
+/* ===== 本体（箱）の色：data-body ===== */
+:root[data-body="aqua"]     { --calc-bg: #cfe9f7; --display-bg: #b9ddf2; }
+:root[data-body="sakura"]   { --calc-bg: #ffe1ec; --display-bg: #ffccdd; }
+:root[data-body="mint"]     { --calc-bg: #d6f5e3; --display-bg: #bfeccf; }
+:root[data-body="lavender"] { --calc-bg: #e7defb; --display-bg: #d6c8f5; }
+:root[data-body="dark"] {
+  --calc-bg: #1f2933;
+  --display-bg: #161d24;
+  --key-bg: #323f4b;
+  --key-bg-active: #3e4c59;
+  --key-text: #f5f7fa;
+  --fn-bg: #52606d;
+  --fn-bg-active: #616e7c;
+  --op-bg: #2f6fed;
+  --op-bg-active: #1d5bd6;
+  --result-text: #ffffff;
+  --expr-text: #9aa5b1;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  transition: background 0.25s ease;
+}
+
+.calc {
+  position: relative;
+  width: min(420px, 100vw);
+  height: min(760px, 100dvh);
+  background: var(--calc-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 14px;
+  gap: 10px;
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition: background 0.25s ease;
+}
+
+/* ===== トップバー ===== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--result-text);
+}
+
+.icon-btn {
+  border: none;
+  background: var(--key-bg);
+  color: var(--key-text);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.08s ease;
+}
+.icon-btn:active { background: var(--key-bg-active); }
+
+/* ===== ディスプレイ ===== */
+.display {
+  flex: 1;
+  background: var(--display-bg);
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  overflow: hidden;
+  min-height: 84px;
+}
+
+.expression {
+  color: var(--expr-text);
+  font-size: clamp(18px, 5vw, 24px);
+  min-height: 30px;
+  word-break: break-all;
+  text-align: right;
+  width: 100%;
+  line-height: 1.3;
+}
+
+.result {
+  color: var(--result-text);
+  font-size: 52px; /* JSで内容に合わせて自動調整（1行に収める） */
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: right;
+  width: 100%;
+  line-height: 1.15;
+  margin-top: 8px;
+}
+
+.result.error {
+  color: #f25c54;
+}
+
+/* ===== キーパッド ===== */
+.keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.key {
+  border: none;
+  border-radius: 14px;
+  background: var(--key-bg);
+  color: var(--key-text);
+  font-size: clamp(28px, 8.5vw, 38px);
+  font-weight: 700;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.08s ease, transform 0.05s ease;
+  user-select: none;
+  font-family: inherit;
+}
+
+.key:active {
+  background: var(--key-bg-active);
+  transform: scale(0.96);
+}
+
+.key-fn {
+  background: var(--fn-bg);
+  font-weight: 700;
+}
+.key-fn:active { background: var(--fn-bg-active); }
+
+.key-op {
+  background: var(--op-bg);
+  color: #ffffff;
+  font-weight: 700;
+}
+.key-op:active { background: var(--op-bg-active); }
+
+.key-equal {
+  background: var(--equal-bg);
+  color: #1f2933;
+  font-weight: 700;
+  grid-column: span 3;
+}
+.key-equal:active { background: var(--equal-bg-active); }
+
+.key-tax {
+  grid-column: span 2;
+  background: var(--tax-bg, #16a085);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: clamp(20px, 6vw, 26px);
+  line-height: 1.1;
+}
+.key-tax:active { background: var(--tax-bg-active, #128f76); }
+
+/* + − × ÷ = の記号は字形が小さく見えるため拡大し、% と見た目を揃える。
+   line-height:1 でボタンの高さ（行の高さ）は変えず、はみ出しを防ぐ。 */
+.keys [data-value="+"],
+.keys [data-value="-"],
+.keys [data-value="×"],
+.keys [data-value="÷"],
+.key-equal {
+  font-size: clamp(40px, 12vw, 50px);
+  line-height: 1;
+}
+
+/* Android・iPhoneのみ：数字キー(0-9)を記号と同じ大きさに揃える（000は除く・iPadは対象外） */
+.big-digits .keys .key[data-value="0"],
+.big-digits .keys .key[data-value="1"],
+.big-digits .keys .key[data-value="2"],
+.big-digits .keys .key[data-value="3"],
+.big-digits .keys .key[data-value="4"],
+.big-digits .keys .key[data-value="5"],
+.big-digits .keys .key[data-value="6"],
+.big-digits .keys .key[data-value="7"],
+.big-digits .keys .key[data-value="8"],
+.big-digits .keys .key[data-value="9"] {
+  font-size: clamp(40px, 12vw, 50px);
+  line-height: 1;
+}
+
+/* ===== テーマ選択ポップオーバー ===== */
+.theme-panel {
+  position: absolute;
+  top: 56px;
+  right: 16px;
+  background: var(--calc-bg);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  z-index: 20;
+}
+
+.theme-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--expr-text);
+}
+
+.swatch-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 220px;
+}
+
+.rate-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rate-input {
+  width: 64px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  background: var(--key-bg);
+  color: var(--key-text);
+  padding: 5px 8px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+}
+.rate-input:focus {
+  outline: none;
+  border-color: var(--op-bg);
+}
+
+.rate-btn {
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  background: var(--key-bg);
+  color: var(--key-text);
+  padding: 6px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.rate-btn.selected {
+  border-color: var(--op-bg);
+  color: var(--op-bg);
+}
+
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: transform 0.08s ease;
+  position: relative;
+}
+.swatch:active { transform: scale(0.9); }
+.swatch.selected {
+  border-color: var(--op-bg);
+  box-shadow: 0 0 0 2px var(--calc-bg) inset, 0 0 0 4px var(--op-bg);
+}
+
+/* 「標準」スウォッチ：テーマ既定に従う印として斜線を表示 */
+.swatch.is-default {
+  background: linear-gradient(135deg, #ffffff 0 46%, #c0392b 46% 54%, #f3f6f9 54% 100%);
+}
+
+/* ===== 履歴パネル ===== */
+.panel {
+  position: absolute;
+  inset: 0;
+  background: var(--calc-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  z-index: 30;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--result-text);
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.panel-btn {
+  border: none;
+  background: var(--key-bg);
+  color: var(--key-text);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.panel-btn:active { background: var(--key-bg-active); }
+
+.history-hint {
+  color: var(--expr-text);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.history-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+.history-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--display-bg);
+  margin-bottom: 8px;
+}
+
+.history-expr,
+.history-result {
+  border-radius: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: background 0.08s ease;
+  word-break: break-all;
+}
+.history-expr:active,
+.history-result:active { background: var(--key-bg-active); }
+
+.history-expr {
+  color: var(--expr-text);
+  font-size: 14px;
+}
+
+.history-result {
+  color: var(--result-text);
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.history-empty {
+  color: var(--expr-text);
+  text-align: center;
+  margin-top: 40px;
+  font-size: 15px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* iPad：本体を画面サイズいっぱいに広げ、ボタンも画面に合わせて大きく伸ばす */
+.device-ipad .calc {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+/* === iPad 縦：前回の大きめ設定 === */
+@media (orientation: portrait) {
+  .device-ipad .display { flex: 0 0 26vh; min-height: 0; }
+  .device-ipad .keys { flex: 1 1 0; min-height: 0; grid-auto-rows: 1fr; }
+  .device-ipad .key { font-size: clamp(36px, 6vh, 64px); }
+  .device-ipad .keys [data-value="+"],
+  .device-ipad .keys [data-value="-"],
+  .device-ipad .keys [data-value="×"],
+  .device-ipad .keys [data-value="÷"],
+  .device-ipad .key-op,
+  .device-ipad .key-equal { font-size: clamp(40px, 7.5vh, 80px); }
+  .device-ipad .key-tax { font-size: clamp(22px, 4vh, 44px); }
+  .device-ipad .expression { font-size: clamp(22px, 3.5vh, 42px); }
+}
+
+/* === iPad 横：画面が低いので必ず収まるよう圧縮（表示板1 : キー2、行はminmaxで縮む） === */
+@media (orientation: landscape) {
+  .device-ipad .display { flex: 1 1 0; min-height: 0; }
+  .device-ipad .keys { flex: 2 1 0; min-height: 0; grid-auto-rows: minmax(0, 1fr); }
+  .device-ipad .key { font-size: clamp(26px, 5.4vh, 54px); padding: 5px 0; }
+  .device-ipad .keys [data-value="+"],
+  .device-ipad .keys [data-value="-"],
+  .device-ipad .keys [data-value="×"],
+  .device-ipad .keys [data-value="÷"],
+  .device-ipad .key-op,
+  .device-ipad .key-equal { font-size: clamp(30px, 6.4vh, 64px); }
+  .device-ipad .key-tax { font-size: clamp(18px, 3.6vh, 36px); }
+  .device-ipad .expression { font-size: clamp(18px, 3vh, 34px); }
+}
+
+/* === iPhone 横：画面が低いので全画面化＋圧縮して全キーを収める（縦向きは変更なし） === */
+@media (orientation: landscape) {
+  .device-iphone .calc {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .device-iphone .display { flex: 1 1 0; min-height: 0; }
+  .device-iphone .keys { flex: 2 1 0; min-height: 0; grid-auto-rows: minmax(0, 1fr); }
+  .device-iphone .key { font-size: clamp(13px, 4.8vh, 26px); padding: 3px 0; }
+  /* 横では数字拡大(big-digits)を解除して他キーと揃える */
+  .device-iphone .keys .key[data-value="0"],
+  .device-iphone .keys .key[data-value="1"],
+  .device-iphone .keys .key[data-value="2"],
+  .device-iphone .keys .key[data-value="3"],
+  .device-iphone .keys .key[data-value="4"],
+  .device-iphone .keys .key[data-value="5"],
+  .device-iphone .keys .key[data-value="6"],
+  .device-iphone .keys .key[data-value="7"],
+  .device-iphone .keys .key[data-value="8"],
+  .device-iphone .keys .key[data-value="9"] {
+    font-size: clamp(13px, 4.8vh, 26px);
+  }
+  .device-iphone .keys [data-value="+"],
+  .device-iphone .keys [data-value="-"],
+  .device-iphone .keys [data-value="×"],
+  .device-iphone .keys [data-value="÷"],
+  .device-iphone .key-op,
+  .device-iphone .key-equal {
+    font-size: clamp(15px, 5.5vh, 30px);
+  }
+  .device-iphone .key-tax { font-size: clamp(10px, 2.8vh, 18px); }
+  .device-iphone .expression { font-size: clamp(10px, 2.4vh, 18px); }
+}
+
+/* === Android 横：iPhoneと同様に全画面化＋圧縮して全キーを収める（縦向きは変更なし） === */
+@media (orientation: landscape) {
+  .platform-android .calc {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .platform-android .display { flex: 1 1 0; min-height: 0; }
+  .platform-android .keys { flex: 2 1 0; min-height: 0; grid-auto-rows: minmax(0, 1fr); }
+  .platform-android .key { font-size: clamp(13px, 4.8vh, 26px); padding: 3px 0; }
+  /* 横では数字拡大(big-digits)を解除して他キーと揃える */
+  .platform-android .keys .key[data-value="0"],
+  .platform-android .keys .key[data-value="1"],
+  .platform-android .keys .key[data-value="2"],
+  .platform-android .keys .key[data-value="3"],
+  .platform-android .keys .key[data-value="4"],
+  .platform-android .keys .key[data-value="5"],
+  .platform-android .keys .key[data-value="6"],
+  .platform-android .keys .key[data-value="7"],
+  .platform-android .keys .key[data-value="8"],
+  .platform-android .keys .key[data-value="9"] {
+    font-size: clamp(13px, 4.8vh, 26px);
+  }
+  .platform-android .keys [data-value="+"],
+  .platform-android .keys [data-value="-"],
+  .platform-android .keys [data-value="×"],
+  .platform-android .keys [data-value="÷"],
+  .platform-android .key-op,
+  .platform-android .key-equal {
+    font-size: clamp(15px, 5.5vh, 30px);
+  }
+  .platform-android .key-tax { font-size: clamp(10px, 2.8vh, 18px); }
+  .platform-android .expression { font-size: clamp(10px, 2.4vh, 18px); }
+}
