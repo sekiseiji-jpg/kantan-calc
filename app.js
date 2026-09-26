@@ -27,6 +27,12 @@
         while (i < str.length && /[0-9.]/.test(str[i])) {
           num += str[i++];
         }
+        // 指数部（計算結果の 1e+21 などをそのまま続けて使えるように）
+        const exp = str.slice(i).match(/^e[+-]?\d+/);
+        if (exp) {
+          num += exp[0];
+          i += exp[0].length;
+        }
         if ((num.match(/\./g) || []).length > 1) {
           throw new Error("数値が不正です");
         }
@@ -115,7 +121,8 @@
   }
 
   function formatNumber(n) {
-    if (Number.isInteger(n)) return n.toString();
+    // 1e21 以上は toString が指数表記になり桁が多すぎるため、整数でも12桁に丸める
+    if (Number.isInteger(n) && Math.abs(n) < 1e21) return n.toString();
     const rounded = parseFloat(n.toPrecision(12));
     return rounded.toString();
   }
@@ -180,6 +187,8 @@
   /* ---------------- 入力ハンドリング ---------------- */
 
   const binaryOps = ["+", "-", "×", "÷"];
+  // 末尾が指数表記の数（例: 1.5e+21、2e-7）
+  const EXP_TAIL = /\d(\.\d*)?e[+-]?\d+$/;
 
   function appendValue(value) {
     // = の直後の継続入力（input には結果のプレーン値が入っている）
@@ -191,6 +200,9 @@
     }
 
     const last = input.slice(-1);
+
+    // 指数表記の数に数字・小数点を書き足すと値が壊れる（1e+21 → 1e+210）ので受け付けない
+    if (/^[0-9.]/.test(value) && EXP_TAIL.test(input)) return;
 
     // % は後置（数値・閉じ括弧・% の直後のみ）
     if (value === "%") {
@@ -255,7 +267,9 @@
 
   function backspace() {
     if (justEvaluated) justEvaluated = false;
-    input = input.slice(0, -1);
+    // 指数表記の数は1文字ずつ削ると別の値（1e+2 など）になるので、数ごと消す
+    const exp = input.match(/[0-9.]+e[+-]?\d+$/);
+    input = exp ? input.slice(0, -exp[0].length) : input.slice(0, -1);
     render();
   }
 

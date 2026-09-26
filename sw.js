@@ -1,5 +1,5 @@
 // かんたん電卓 Service Worker（オフライン対応）
-const CACHE = "kantan-calc-v26";
+const CACHE = "kantan-calc-v27";
 const ASSETS = [
   "./",
   "./index.html",
